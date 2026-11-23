@@ -7,13 +7,11 @@
 <style>
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   body{margin:0; font-family:Arial; background:#F2F0E6; overflow:hidden; height:100dvh; display:flex; flex-direction:column}
-  /* TOP SCRAMBLE */
-  .top{background:#EADCF0; padding:8px 10px; text-align:center; position:relative}
+  .top{background:#EADCF0; padding:8px 10px; text-align:center; position:relative; z-index:10}
   .top-bar{display:flex; justify-content:space-between; font-size:12px; color:#555}
   #scramble{font-weight:bold; font-size:17px; line-height:1.4; margin-top:4px; word-break:break-word}
-  /* MAIN */
   .main{flex:1; display:flex; overflow:hidden}
-  .left{width:230px; background:#EDE6F5; padding:10px; overflow-y:auto; display:none}
+  .left{width:230px; background:#EDE6F5; padding:10px; overflow-y:auto; display:none; z-index:10}
   .left.show{display:block}
   @media(min-width:800px){ .left{display:block} }
   .logo{background:#000; color:yellow; font-weight:900; font-size:22px; display:inline-block; padding:4px 10px}
@@ -21,27 +19,24 @@
   .stats td{padding:2px 4px}
   .list{font-family:monospace; font-size:12px; margin-top:10px; max-height:300px; overflow:auto}
   .list div{padding:2px 0; border-bottom:1px solid #ddd}
-  /* CENTER */
-  .center{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:10px}
+  .center{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:10px; touch-action:none}
   #timer{font-family:monospace; font-weight:900; font-size:clamp(70px, 22vw, 150px); line-height:1; user-select:none; touch-action:none}
   #timer.hold{color:red} #timer.ready{color:green}
   #diff{color:green; font-size:18px; height:22px}
   .ao{font-size:clamp(22px, 6vw, 32px); color:#2A4AD6}
   .hint{font-size:11px; color:gray; margin-top:10px; text-align:center}
-  /* CUBE DRAW */
-  #cubeBox{background:#EADCF0; padding:10px; border-radius:8px; position:absolute; right:10px; bottom:10px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  .myname{font-size:18px; font-weight:bold; letter-spacing:4px; color:#555; margin-top:15px; text-align:center;}
+  #cubeBox{background:#EADCF0; padding:10px; border-radius:8px; position:absolute; right:10px; bottom:10px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.15); z-index:10}
   #cubeBox canvas{width:150px; height:110px}
   @media(max-width:600px){ #cubeBox{transform:scale(.75); transform-origin:bottom right} }
-  /* BUTTONS */
-  .btns{position:absolute; top:10px; left:10px; display:flex; gap:6px}
+  .btns{position:absolute; top:10px; left:10px; display:flex; gap:6px; z-index:10}
   button{border:0; padding:9px 12px; border-radius:8px; background:#fff; font-weight:bold; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.2)}
-  /* SETTINGS MODAL */
   .modal{display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:99; align-items:center; justify-content:center}
   .modal.open{display:flex}
   .card{background:#fff; width:92%; max-width:380px; border-radius:12px; padding:18px}
   .card h3{margin:0 0 10px}
   .row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee}
-  select,input[type=number]{padding:6px; border-radius:6px; border:1px solid #ccc}
+  select{padding:6px; border-radius:6px; border:1px solid #ccc}
 </style>
 </head>
 <body>
@@ -73,11 +68,15 @@
       <button onclick="openSettings()">⚙️ Settings</button>
       <button onclick="nextScramble()">↻ Scramble</button>
     </div>
+
+    <!-- DINAGDAG KO LANG - NAME MO -->
+    <div class="myname">MARK JAY</div>
+
     <div id="timer">0.00</div>
     <div id="diff"></div>
     <div class="ao" id="ao5Big">ao5: -</div>
     <div class="ao" id="ao12Big">ao12: -</div>
-    <div class="hint" id="hintText">HOLD sa timer para mag-READY (green) → BITAWAN para mag-start → TAP para mag-stop<br>PC: Hold SPACE</div>
+    <div class="hint">HOLD kahit saan sa screen para mag-READY (green) → BITAWAN para mag-start → TAP kahit saan para mag-stop<br>PC: Hold SPACE</div>
 
     <div id="cubeBox">
       <canvas id="cubeCanvas" width="300" height="220"></canvas>
@@ -100,13 +99,9 @@
 </div>
 
 <script>
-// ===== CUBE STATE =====
-let faces; // 0 U white, 1 D yellow, 2 F green, 3 B blue, 4 L orange, 5 R red
+let faces;
 const COLORS = ['#fff','#FFD500','#009B48','#0051BA','#FF5800','#C41E3A'];
-function resetCube(){
-  faces = [];
-  for(let i=0;i<6;i++) faces.push(Array(9).fill(i));
-}
+function resetCube(){ faces = []; for(let i=0;i<6;i++) faces.push(Array(9).fill(i)); }
 function rotFace(f, cw=true){
   let a = faces[f], b=[...a];
   let idx = cw ? [6,3,0,7,4,1,8,5,2] : [2,5,8,1,4,7,0,3,6];
@@ -151,24 +146,20 @@ function drawCube(){
   if(document.getElementById('setShowCube').value=='0'){ document.getElementById('cubeBox').style.display='none'; return; }
   document.getElementById('cubeBox').style.display='block';
   let c=document.getElementById('cubeCanvas'), ctx=c.getContext('2d');
-  ctx.clearRect(0,0,300,220); ctx.fillStyle='#EADCF0'; ctx.fillRect(0,0,300,220);
-  // net positions: U top, L F R B middle, D bottom
-  let pos={0:[100,5],4:[5,75],2:[100,75],5:[195,75],3:[290,75],1:[100,145]};
-  // need wider canvas for B, adjust
+  ctx.clearRect(0,0,400,220); ctx.fillStyle='#EADCF0'; ctx.fillRect(0,0,400,220);
   c.width=400;
-  pos={0:[130,5],4:[5,75],2:[130,75],5:[255,75],3:[380,75],1:[130,145]};
-  // Actually draw in 400 width, scale canvas CSS keeps it small
+  let pos={0:[130,5],4:[5,75],2:[130,75],5:[255,75],3:[380,75],1:[130,145]};
   for(let f=0;f<6;f++){
     let [ox,oy]=pos[f];
+    if(f==3) ox=355;
     for(let i=0;i<9;i++){
-      let x=ox+(i%3)*30, y=oy+Math.floor(i/3)*22;
+      let w = f==3 ? 14 : 28;
+      let x=ox+(i%3)*(f==3?15:30), y=oy+Math.floor(i/3)*22;
       ctx.fillStyle=COLORS[faces[f][i]];
-      ctx.fillRect(x,y,28,20); ctx.strokeStyle='#000'; ctx.strokeRect(x,y,28,20);
+      ctx.fillRect(x,y,w,20); ctx.strokeStyle='#000'; ctx.strokeRect(x,y,w,20);
     }
   }
 }
-
-// ===== SCRAMBLE =====
 let scrambleArr=[];
 function genScramble(){
   let ev=document.getElementById('setEvent').value;
@@ -185,9 +176,8 @@ function genScramble(){
 }
 function nextScramble(){ if(running) return; genScramble(); }
 
-// ===== TIMER =====
 let times=JSON.parse(localStorage.getItem('cstimes')||'[]');
-let running=false, startT=0, elapsed=0, raf=null, holding=false, holdT=0, ready=false, inspecting=false, inspT=15, inspInterval=null;
+let running=false, startT=0, elapsed=0, raf=null, holding=false, ready=false, inspecting=false, inspT=15, inspInterval=null;
 let timerEl=document.getElementById('timer');
 function fmt(t){ if(t==null) return '-'; if(t>=60) return Math.floor(t/60)+':'+(t%60).toFixed(2).padStart(5,'0'); return t.toFixed(2); }
 function ao(n){ if(times.length<n) return null; let s=[...times.slice(-n)].sort((a,b)=>a-b); s=s.slice(1,-1); return s.reduce((a,b)=>a+b,0)/s.length; }
@@ -228,31 +218,41 @@ function stopTimer(){
 }
 function clearAll(){ times=[]; updateStats(); document.getElementById('diff').textContent=''; timerEl.textContent='0.00'; }
 
-// HOLD LOGIC - Touch + Mouse + Space
 function pressStart(e){
-  if(e.target.closest('button')||e.target.closest('.modal')||e.target.closest('.top')) return;
   if(running){ stopTimer(); return; }
   if(inspecting){ clearInterval(inspInterval); inspecting=false; startTimer(); return; }
   let holdMs=parseInt(document.getElementById('setHold').value);
-  if(holdMs==0){ // tap lang
+  if(holdMs==0){
     if(document.getElementById('setInspection').value=='1') startInspection(); else startTimer();
     return;
   }
-  holding=true; ready=false; holdT=Date.now(); timerEl.classList.add('hold'); timerEl.textContent='0.00';
+  holding=true; ready=false; timerEl.classList.add('hold'); timerEl.textContent='0.00';
   setTimeout(()=>{ if(holding){ ready=true; timerEl.classList.remove('hold'); timerEl.classList.add('ready'); } }, holdMs);
 }
 function pressEnd(){
   if(!holding) return; holding=false; timerEl.classList.remove('hold','ready');
   if(ready){ if(document.getElementById('setInspection').value=='1') startInspection(); else startTimer(); }
 }
-timerEl.addEventListener('touchstart', e=>{ e.preventDefault(); pressStart(e); }, {passive:false});
-timerEl.addEventListener('touchend', e=>{ e.preventDefault(); pressEnd(); });
-timerEl.addEventListener('mousedown', pressStart);
-timerEl.addEventListener('mouseup', pressEnd);
+
+let touchArea = document.getElementById('center');
+function isButton(e){
+  return e.target.closest('button') || e.target.closest('.modal') || e.target.closest('.top') || e.target.closest('#cubeBox') || e.target.closest('.left');
+}
+touchArea.addEventListener('touchstart', e=>{
+  if(isButton(e)) return;
+  e.preventDefault();
+  pressStart(e);
+}, {passive:false});
+touchArea.addEventListener('touchend', e=>{
+  if(isButton(e)) return;
+  e.preventDefault();
+  pressEnd();
+});
+touchArea.addEventListener('mousedown', e=>{ if(isButton(e)) return; pressStart(e); });
+touchArea.addEventListener('mouseup', e=>{ if(isButton(e)) return; pressEnd(); });
 document.addEventListener('keydown', e=>{ if(e.code=='Space' && !e.repeat){ e.preventDefault(); pressStart(e); } });
 document.addEventListener('keyup', e=>{ if(e.code=='Space'){ pressEnd(); } });
 
-// SETTINGS
 function openSettings(){ document.getElementById('settingsModal').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsModal').classList.remove('open'); applyTheme(); genScramble(); }
 function toggleLeft(){ document.getElementById('leftPanel').classList.toggle('show'); }
@@ -260,7 +260,6 @@ function applyTheme(){
   let dark=document.getElementById('setTheme').value=='dark';
   document.body.style.background=dark?'#222':'#F2F0E6';
   document.body.style.color=dark?'#fff':'#000';
-  timerEl.style.color=dark?'#fff':'#000';
 }
 genScramble(); updateStats();
 </script>
