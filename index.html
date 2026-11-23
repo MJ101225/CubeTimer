@@ -6,7 +6,9 @@
 <title>csTimer Clone - Offline</title>
 <style>
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-  body{margin:0; font-family:Arial; background:#F2F0E6; overflow:hidden; height:100dvh; display:flex; flex-direction:column}
+  body{margin:0; font-family:Arial; background:#F2F0E6; overflow:hidden; height:100dvh; display:flex; flex-direction:column; transition:background 0.15s}
+  body.holding{ background:#FFD6D6 !important; }
+  body.ready-green{ background:#B6F0B6 !important; }
   .top{background:#EADCF0; padding:8px 10px; text-align:center; position:relative; z-index:10}
   .top-bar{display:flex; justify-content:space-between; font-size:12px; color:#555}
   #scramble{font-weight:bold; font-size:17px; line-height:1.4; margin-top:4px; word-break:break-word}
@@ -20,12 +22,13 @@
   .list{font-family:monospace; font-size:12px; margin-top:10px; max-height:300px; overflow:auto}
   .list div{padding:2px 0; border-bottom:1px solid #ddd}
   .center{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:10px; touch-action:none}
-  #timer{font-family:monospace; font-weight:900; font-size:clamp(70px, 22vw, 150px); line-height:1; user-select:none; touch-action:none}
+  /* DAGDAG LANG DITO - PARA WALANG DOBLENG NUMERO SA LAPTOP */
+  #timer{font-family:monospace; font-weight:900; font-size:clamp(70px, 22vw, 150px); line-height:1; user-select:none; touch-action:none; text-shadow:none !important; -webkit-text-stroke:0 !important; will-change:contents; min-width:320px; text-align:center;}
   #timer.hold{color:red} #timer.ready{color:green}
   #diff{color:green; font-size:18px; height:22px}
   .ao{font-size:clamp(22px, 6vw, 32px); color:#2A4AD6}
   .hint{font-size:11px; color:gray; margin-top:10px; text-align:center}
-  .myname{font-size:18px; font-weight:bold; letter-spacing:4px; color:#555; margin-top:15px; text-align:center;}
+  .myname{position:absolute; top:58px; left:0; right:0; font-size:18px; font-weight:bold; letter-spacing:4px; color:#555; text-align:center; z-index:5;}
   #cubeBox{background:#EADCF0; padding:10px; border-radius:8px; position:absolute; right:10px; bottom:10px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.15); z-index:10}
   #cubeBox canvas{width:150px; height:110px}
   @media(max-width:600px){ #cubeBox{transform:scale(.75); transform-origin:bottom right} }
@@ -68,16 +71,12 @@
       <button onclick="openSettings()">⚙️ Settings</button>
       <button onclick="nextScramble()">↻ Scramble</button>
     </div>
-
-    <!-- DINAGDAG KO LANG - NAME MO -->
     <div class="myname">MARK JAY</div>
-
     <div id="timer">0.00</div>
     <div id="diff"></div>
     <div class="ao" id="ao5Big">ao5: -</div>
     <div class="ao" id="ao12Big">ao12: -</div>
     <div class="hint">HOLD kahit saan sa screen para mag-READY (green) → BITAWAN para mag-start → TAP kahit saan para mag-stop<br>PC: Hold SPACE</div>
-
     <div id="cubeBox">
       <canvas id="cubeCanvas" width="300" height="220"></canvas>
       <div style="font-size:11px">Function: draw scramble</div>
@@ -175,7 +174,6 @@ function genScramble(){
   resetCube(); out.forEach(doMove); drawCube();
 }
 function nextScramble(){ if(running) return; genScramble(); }
-
 let times=JSON.parse(localStorage.getItem('cstimes')||'[]');
 let running=false, startT=0, elapsed=0, raf=null, holding=false, ready=false, inspecting=false, inspT=15, inspInterval=null;
 let timerEl=document.getElementById('timer');
@@ -206,19 +204,20 @@ function startInspection(){
     if(inspT<=0){ clearInterval(inspInterval); inspecting=false; startTimer(); }
   },1000);
 }
-function startTimer(){ running=true; startT=performance.now(); timerEl.style.color='#000';
+function startTimer(){ running=true; startT=performance.now(); timerEl.style.color='#000'; timerEl.classList.remove('hold','ready');
   const loop=()=>{ if(!running) return; elapsed=(performance.now()-startT)/1000; timerEl.textContent=fmt(elapsed); raf=requestAnimationFrame(loop); }; raf=requestAnimationFrame(loop);
 }
 function stopTimer(){
   running=false; cancelAnimationFrame(raf);
+  document.body.classList.remove('holding','ready-green');
   let prev=times[times.length-1];
   times.push(elapsed);
   document.getElementById('diff').textContent = prev!=null ? `(${(elapsed-prev>=0?'+':'')}${(elapsed-prev).toFixed(2)})` : '';
   updateStats(); genScramble();
 }
 function clearAll(){ times=[]; updateStats(); document.getElementById('diff').textContent=''; timerEl.textContent='0.00'; }
-
 function pressStart(e){
+  if(holding) return;
   if(running){ stopTimer(); return; }
   if(inspecting){ clearInterval(inspInterval); inspecting=false; startTimer(); return; }
   let holdMs=parseInt(document.getElementById('setHold').value);
@@ -227,32 +226,24 @@ function pressStart(e){
     return;
   }
   holding=true; ready=false; timerEl.classList.add('hold'); timerEl.textContent='0.00';
-  setTimeout(()=>{ if(holding){ ready=true; timerEl.classList.remove('hold'); timerEl.classList.add('ready'); } }, holdMs);
+  document.body.classList.add('holding'); document.body.classList.remove('ready-green');
+  setTimeout(()=>{ if(holding){ ready=true; timerEl.classList.remove('hold'); timerEl.classList.add('ready'); document.body.classList.remove('holding'); document.body.classList.add('ready-green'); } }, holdMs);
 }
 function pressEnd(){
   if(!holding) return; holding=false; timerEl.classList.remove('hold','ready');
+  document.body.classList.remove('holding','ready-green');
   if(ready){ if(document.getElementById('setInspection').value=='1') startInspection(); else startTimer(); }
 }
-
 let touchArea = document.getElementById('center');
 function isButton(e){
   return e.target.closest('button') || e.target.closest('.modal') || e.target.closest('.top') || e.target.closest('#cubeBox') || e.target.closest('.left');
 }
-touchArea.addEventListener('touchstart', e=>{
-  if(isButton(e)) return;
-  e.preventDefault();
-  pressStart(e);
-}, {passive:false});
-touchArea.addEventListener('touchend', e=>{
-  if(isButton(e)) return;
-  e.preventDefault();
-  pressEnd();
-});
+touchArea.addEventListener('touchstart', e=>{ if(isButton(e)) return; e.preventDefault(); pressStart(e); }, {passive:false});
+touchArea.addEventListener('touchend', e=>{ if(isButton(e)) return; e.preventDefault(); pressEnd(); });
 touchArea.addEventListener('mousedown', e=>{ if(isButton(e)) return; pressStart(e); });
 touchArea.addEventListener('mouseup', e=>{ if(isButton(e)) return; pressEnd(); });
 document.addEventListener('keydown', e=>{ if(e.code=='Space' && !e.repeat){ e.preventDefault(); pressStart(e); } });
 document.addEventListener('keyup', e=>{ if(e.code=='Space'){ pressEnd(); } });
-
 function openSettings(){ document.getElementById('settingsModal').classList.add('open'); }
 function closeSettings(){ document.getElementById('settingsModal').classList.remove('open'); applyTheme(); genScramble(); }
 function toggleLeft(){ document.getElementById('leftPanel').classList.toggle('show'); }
