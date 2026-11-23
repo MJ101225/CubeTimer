@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -27,7 +27,6 @@
   #diff{color:green; font-size:18px; height:22px}
   .ao{font-size:clamp(22px, 6vw, 32px); color:#2A4AD6}
   .hint{font-size:11px; color:gray; margin-top:10px; text-align:center}
-  /* INILIPAT KO LANG DITO - SA BABA NG 3 BUTTONS, SA KALIWA */
   .myname{position:absolute; top:58px; left:12px; font-size:18px; font-weight:bold; letter-spacing:4px; color:#555; text-align:left; z-index:5;}
   #cubeBox{background:#EADCF0; padding:10px; border-radius:8px; position:absolute; right:10px; bottom:10px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.15); z-index:10}
   #cubeBox canvas{width:150px; height:110px}
@@ -76,7 +75,7 @@
     <div id="diff"></div>
     <div class="ao" id="ao5Big">ao5: -</div>
     <div class="ao" id="ao12Big">ao12: -</div>
-    <div class="hint">HOLD kahit saan sa screen para mag-READY (green) → BITAWAN para mag-start → TAP kahit saan para mag-stop<br>PC: Hold SPACE</div>
+    <div class="hint">HOLD anywhere on the screen to READY (green) → RELEASE to start → TAP anywhere to stop<br>PC: Hold SPACE</div>
     <div id="cubeBox">
       <canvas id="cubeCanvas" width="300" height="220"></canvas>
       <div style="font-size:11px">Function: draw scramble</div>
@@ -86,11 +85,11 @@
 
 <div class="modal" id="settingsModal">
   <div class="card">
-    <h3>⚙️ Settings - Gumagana Lahat</h3>
+    <h3>⚙️ Settings</h3>
     <div class="row"><span>Inspection (WCA 15s)</span><select id="setInspection"><option value="0">Off</option><option value="1">On - 15s</option></select></div>
-    <div class="row"><span>Hold to Start</span><select id="setHold"><option value="0">Off (Tap lang)</option><option value="300" selected>0.3s</option><option value="500">0.5s</option><option value="1000">1s</option></select></div>
+    <div class="row"><span>Hold to Start</span><select id="setHold"><option value="0">Off (Tap only)</option><option value="300" selected>0.3s</option><option value="500">0.5s</option><option value="1000">1s</option></select></div>
     <div class="row"><span>Show Scramble Image</span><select id="setShowCube"><option value="1">On</option><option value="0">Off</option></select></div>
-    <div class="row"><span>Beep sa Inspection</span><select id="setBeep"><option value="1">On</option><option value="0">Off</option></select></div>
+    <div class="row"><span>Inspection Beep</span><select id="setBeep"><option value="1">On</option><option value="0">Off</option></select></div>
     <div class="row"><span>Theme</span><select id="setTheme"><option value="light">Light (csTimer)</option><option value="dark">Dark</option></select></div>
     <div class="row"><span>Event</span><select id="setEvent"><option>3x3x3</option><option>2x2x2</option><option>4x4x4</option></select></div>
     <button onclick="closeSettings()" style="width:100%; background:#2A4AD6; color:#fff; margin-top:12px; padding:12px">Save & Close</button>
@@ -256,4 +255,3 @@ genScramble(); updateStats();
 </script>
 </body>
 </html>
-
